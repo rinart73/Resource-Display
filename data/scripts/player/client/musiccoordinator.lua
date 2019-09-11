@@ -20,35 +20,50 @@ end
 function MusicCoordinator.resourceDisplay_onPreRenderHud()
     local player = Player()
     local faction = player.craft.allianceOwned and Alliance() or player
-    local playerNotFlying = false
+    local hideResources = false
     if resourceDisplay_gameVersion.minor >= 26 then
-        playerNotFlying = player.state ~= PlayerStateType.Fly
+        if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then return end
+        hideResources = player.state ~= PlayerStateType.Fly
     end
-    if faction.infiniteResources or playerNotFlying then return end
 
-    local resources = {faction:getResources()}
     local y = 10
-    local material, rect
-    for i = 1, #resources do
-        material = Material(i-1)
+    if not faction.infiniteResources and not hideResources then
+        local resources = {faction:getResources()}
+        local material, rect
+        for i = 1, #resources do
+            material = Material(i-1)
+            y = y + 18
+            rect = Rect(5, y, 295, y + 16)
+            if faction.isAlliance then
+                drawTextRect("[A]  /* Alliance resource prefix */"%_t..material.name, rect, -1, -1, material.color, 15, 0, 0, 2)
+            else
+                drawTextRect(material.name, rect, -1, -1, material.color, 15, 0, 0, 2)
+            end
+            drawTextRect(createMonetaryString(resources[i]), rect, 1, -1, material.color, 15, 0, 0, 2)
+        end
         y = y + 18
         rect = Rect(5, y, 295, y + 16)
+        local color = ColorRGB(1, 1, 1)
         if faction.isAlliance then
-            drawTextRect("[A]  /* Alliance resource prefix */"%_t..material.name, rect, -1, -1, material.color, 15, 0, 0, 2)
+            drawTextRect("[A]  /* Alliance resource prefix */"%_t.."Credits"%_t, rect, -1, -1, color, 15, 0, 0, 2)
         else
-            drawTextRect(material.name, rect, -1, -1, material.color, 15, 0, 0, 2)
+            drawTextRect("Credits"%_t, rect, -1, -1, color, 15, 0, 0, 2)
         end
-        drawTextRect(createMonetaryString(resources[i]), rect, 1, -1, material.color, 15, 0, 0, 2)
+        drawTextRect(createMonetaryString(faction.money), rect, 1, -1, color, 15, 0, 0, 2)
+    else
+        y = y + NumMaterials() * 18
     end
+    -- cargo
+    local ship = getPlayerCraft()
     y = y + 18
     rect = Rect(5, y, 295, y + 16)
-    local color = ColorRGB(1, 1, 1)
-    if faction.isAlliance then
-        drawTextRect("[A]  /* Alliance resource prefix */"%_t.."Credits"%_t, rect, -1, -1, color, 15, 0, 0, 2)
+    color = ColorRGB(0.8, 0.8, 0.8)
+    drawTextRect("Cargo Hold"%_t, rect, -1, -1, color, 15, 0, 0, 2)
+    if ship and ship.maxCargoSpace then
+        drawTextRect(math.ceil(ship.occupiedCargoSpace).."/"..math.floor(ship.maxCargoSpace), rect, 1, -1, color, 15, 0, 0, 2)
     else
-        drawTextRect("Credits"%_t, rect, -1, -1, color, 15, 0, 0, 2)
+        drawTextRect("-", rect, 1, -1, color, 15, 0, 0, 2)
     end
-    drawTextRect(createMonetaryString(faction.money), rect, 1, -1, color, 15, 0, 0, 2)
 end
 
 
