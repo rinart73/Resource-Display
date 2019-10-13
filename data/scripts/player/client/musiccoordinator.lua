@@ -19,7 +19,10 @@ end
 
 function MusicCoordinator.resourceDisplay_onPreRenderHud()
     local player = Player()
-    local faction = player.craft.allianceOwned and Alliance() or player
+    local faction = player
+    if player.craft and player.craft.allianceOwned then
+        faction = Alliance()
+    end
     local hideResources = false
     if resourceDisplay_gameVersion.minor >= 26 then
         if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then return end
