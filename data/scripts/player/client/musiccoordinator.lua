@@ -1,12 +1,9 @@
 -- While my mod has nothing to do with music, this approach allows it to be a 100% clientside mod
 
 local resourceDisplay_initialize -- extended functions
-local resourceDisplay_gameVersion
 
 if onClient() then
 
-
-resourceDisplay_gameVersion = GameVersion()
 
 resourceDisplay_initialize = MusicCoordinator.initialize
 function MusicCoordinator.initialize(...)
@@ -23,14 +20,10 @@ function MusicCoordinator.resourceDisplay_onPreRenderHud()
     if player.craft and player.craft.allianceOwned then
         faction = Alliance()
     end
-    local hideResources = false
-    if resourceDisplay_gameVersion.minor >= 26 then
-        if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then return end
-        hideResources = player.state ~= PlayerStateType.Fly
-    end
+    if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then return end
 
     local y = 10
-    if not faction.infiniteResources and not hideResources then
+    if not faction.infiniteResources and player.state == PlayerStateType.Fly then
         local resources = {faction:getResources()}
         local material, rect
         for i = 1, #resources do
@@ -52,7 +45,7 @@ function MusicCoordinator.resourceDisplay_onPreRenderHud()
         else
             drawTextRect("Credits"%_t, rect, -1, -1, color, 15, 0, 0, 2)
         end
-        drawTextRect(createMonetaryString(faction.money), rect, 1, -1, color, 15, 0, 0, 2)
+        drawTextRect("¢"..createMonetaryString(faction.money), rect, 1, -1, color, 15, 0, 0, 2)
     else
         y = y + NumMaterials() * 18
     end
