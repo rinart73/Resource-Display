@@ -1,0 +1,6 @@
+# ========== data\scripts\player\client\musiccoordinator.lua ==========
+#: data\scripts\player\client\musiccoordinator.lua:
+msgid "Inventory Slots"
+msgstr ""
+
+
