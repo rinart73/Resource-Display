@@ -41,9 +41,9 @@ function MusicCoordinator.resourceDisplay_onPreRenderHud()
     local y = 10
     if not faction.infiniteResources and player.state == PlayerStateType.Fly and not resourceDisplay_hud.resourcesVisible then
         local resources = {faction:getResources()}
-        local material, rect
+        local rect
         for i = 1, #resources do
-            material = Material(i-1)
+            local material = Material(i-1)
             y = y + 18
             rect = Rect(5, y, 295, y + 16)
             if faction.isAlliance then
