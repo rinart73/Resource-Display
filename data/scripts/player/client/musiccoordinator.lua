@@ -15,10 +15,11 @@ function MusicCoordinator.initialize(...)
 
     -- load config
     local configOptions = {
-      _version = { default = "1.0", comment = "Config version. Don't touch." },
+      _version = { default = "1.1", comment = "Config version. Don't touch." },
       ShowCargoCapacity = { default = true, comment = "Show current ship cargo capacity" },
       ShowInventoryCapacity = { default = true, comment = "Show currently used and total inventory slots" },
-      InventoryCapacityShowBothAlways = { default = false, comment = "Show both player and alliance inventory capacity no matter the ship" }
+      InventoryCapacityShowBothAlways = { default = false, comment = "Show both player and alliance inventory capacity no matter the ship" },
+      UIPosition = { default = 10, comment = "Vertical position of UI"}
     }
     local isModified
     ResourceDisplayConfig, isModified = Azimuth.loadConfig("ResourceDisplay", configOptions)
@@ -38,7 +39,7 @@ function MusicCoordinator.resourceDisplay_onPreRenderHud()
     end
     if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then return end
 
-    local y = 10
+    local y = ResourceDisplayConfig.UIPosition
     if not faction.infiniteResources and player.state == PlayerStateType.Fly and not resourceDisplay_hud.resourcesVisible then
         local resources = {faction:getResources()}
         local rect
