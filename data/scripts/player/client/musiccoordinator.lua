@@ -2,7 +2,7 @@
 
 local Azimuth -- client includes
 local resourceDisplay_initialize -- client, extended functions
-local ResourceDisplayConfig, resourceDisplay_hud -- client
+local ResourceDisplayConfig -- client
 
 if onClient() then
 
@@ -26,7 +26,6 @@ function MusicCoordinator.initialize(...)
         Azimuth.saveConfig("ResourceDisplay", ResourceDisplayConfig, configOptions)
     end
 
-    resourceDisplay_hud = Hud()
     Player():registerCallback("onPreRenderHud", "resourceDisplay_onPreRenderHud")
 end
 
@@ -38,34 +37,32 @@ function MusicCoordinator.resourceDisplay_onPreRenderHud()
     end
     if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then return end
 
-    local y = 10
-    if not faction.infiniteResources and player.state == PlayerStateType.Fly and not resourceDisplay_hud.resourcesVisible then
+    local alignBottom = tablelength(Galaxy():getPlayerNames()) > 1
+    local margin = alignBottom and 17 or 18
+    local y = 0
+    local uiLines = {}
+    if not faction.infiniteResources and player.state == PlayerStateType.Fly and not Hud().resourcesVisible then
         local resources = {faction:getResources()}
-        local rect
         for i = 1, #resources do
             local material = Material(i-1)
-            y = y + 18
-            rect = Rect(5, y, 295, y + 16)
+            y = y + margin
             if faction.isAlliance then
-                drawTextRect("[A]  /* Alliance resource prefix */"%_t..material.name, rect, -1, -1, material.color, 15, 0, 0, 2)
+                uiLines[#uiLines+1] = { text = "[A]  /* Alliance resource prefix */"%_t..material.name, y = y, color = material.color }
             else
-                drawTextRect(material.name, rect, -1, -1, material.color, 15, 0, 0, 2)
+                uiLines[#uiLines+1] = { text = material.name, y = y, color = material.color }
             end
-            drawTextRect(createMonetaryString(resources[i]), rect, 1, -1, material.color, 15, 0, 0, 2)
+            uiLines[#uiLines+1] = { text = createMonetaryString(resources[i]), y = y, color = material.color, right = 1 }
         end
-        y = y + 18
-        rect = Rect(5, y, 295, y + 16)
-        local color = ColorRGB(1, 1, 1)
+        y = y + margin
+        local white = ColorRGB(1, 1, 1)
         if faction.isAlliance then
-            drawTextRect("[A]  /* Alliance resource prefix */"%_t.."Credits"%_t, rect, -1, -1, color, 15, 0, 0, 2)
+            uiLines[#uiLines+1] = { text = "[A]  /* Alliance resource prefix */"%_t.."Credits"%_t, y = y, color = white }
         else
-            drawTextRect("Credits"%_t, rect, -1, -1, color, 15, 0, 0, 2)
+            uiLines[#uiLines+1] = { text = "Credits"%_t, y = y, color = white }
         end
-        drawTextRect("¢"..createMonetaryString(faction.money), rect, 1, -1, color, 15, 0, 0, 2)
-    else
-        if resourceDisplay_hud.resourcesVisible then
-            y = y + NumMaterials() * 18
-        end
+        uiLines[#uiLines+1] = { text = "¢"..createMonetaryString(faction.money), y = y, color = white, right = 1 }
+    elseif not alignBottom and Hud().resourcesVisible then
+        y = y + NumMaterials() * margin
     end
     -- inventory slots
     if ResourceDisplayConfig.ShowInventoryCapacity then
@@ -73,36 +70,42 @@ function MusicCoordinator.resourceDisplay_onPreRenderHud()
             faction = player
         end
         local inv = faction:getInventory()
-        y = y + 18
-        rect = Rect(5, y, 295, y + 16)
-        color = ColorRGB(0.8, 0.8, 0.8)
+        y = y + margin
+        local color = ColorRGB(0.8, 0.8, 0.8)
         if faction.isAlliance then
-            drawTextRect("[A]  /* Alliance resource prefix */"%_t.."Inventory Slots"%_t, rect, -1, -1, color, 15, 0, 0, 2)
+            uiLines[#uiLines+1] = { text = "[A]  /* Alliance resource prefix */"%_t.."Inventory Slots"%_t, y = y, color = color }
         else
-            drawTextRect("Inventory Slots"%_t, rect, -1, -1, color, 15, 0, 0, 2)
+            uiLines[#uiLines+1] = { text = "Inventory Slots"%_t, y = y, color = color }
         end
-        drawTextRect(inv.occupiedSlots.."/"..inv.maxSlots, rect, 1, -1, color, 15, 0, 0, 2)
+        uiLines[#uiLines+1] = { text = inv.occupiedSlots.."/"..inv.maxSlots, y = y, color = color, right = 1 }
         if ResourceDisplayConfig.InventoryCapacityShowBothAlways and player.alliance then
             inv = player.alliance:getInventory()
-            y = y + 18
-            rect = Rect(5, y, 295, y + 16)
+            y = y + margin
             color = ColorRGB(0.8, 0.8, 0.8)
-            drawTextRect("[A]  /* Alliance resource prefix */"%_t.."Inventory Slots"%_t, rect, -1, -1, color, 15, 0, 0, 2)
-            drawTextRect(inv.occupiedSlots.."/"..inv.maxSlots, rect, 1, -1, color, 15, 0, 0, 2)
+            uiLines[#uiLines+1] = { text = "[A]  /* Alliance resource prefix */"%_t.."Inventory Slots"%_t, y = y, color = color }
+            uiLines[#uiLines+1] = { text = inv.occupiedSlots.."/"..inv.maxSlots, y = y, color = color, right = 1 }
         end
     end
     -- cargo
     if ResourceDisplayConfig.ShowCargoCapacity then
         local ship = getPlayerCraft()
-        y = y + 18
-        rect = Rect(5, y, 295, y + 16)
-        color = ColorRGB(0.8, 0.8, 0.8)
-        drawTextRect("Cargo Hold"%_t, rect, -1, -1, color, 15, 0, 0, 2)
+        y = y + margin
+        local color = ColorRGB(0.8, 0.8, 0.8)
+        uiLines[#uiLines+1] = { text = "Cargo Hold"%_t, y = y, color = color }
         if ship and ship.maxCargoSpace then
-            drawTextRect(math.ceil(ship.occupiedCargoSpace).."/"..math.floor(ship.maxCargoSpace), rect, 1, -1, color, 15, 0, 0, 2)
+            uiLines[#uiLines+1] = { text = math.ceil(ship.occupiedCargoSpace).."/"..math.floor(ship.maxCargoSpace), y = y, color = color, right = 1 }
         else
-            drawTextRect("-", rect, 1, -1, color, 15, 0, 0, 2)
+            uiLines[#uiLines+1] = { text = "-", y = y, color = color, right = 1 }
         end
+    end
+
+    if alignBottom then
+        y = getResolution().y - 492 - y
+    else
+        y = 10
+    end
+    for _, line in ipairs(uiLines) do
+        drawTextRect(line.text, Rect(5, y + line.y, 295, y + line.y + 16), line.right or -1, -1, line.color, 15, 0, 0, 2)
     end
 end
 
