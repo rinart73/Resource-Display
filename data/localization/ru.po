@@ -1,5 +1,17 @@
-# ========== data\scripts\player\client\musiccoordinator.lua ==========
-#: data\scripts\player\client\musiccoordinator.lua:
+# ========== data/scripts/player/client/musiccoordinator.lua ==========
+#: data/scripts/player/client/musiccoordinator.lua:
+msgid "Resources Display"
+msgstr "Отображение ресурсов"
+
+#: data/scripts/player/client/musiccoordinator.lua:
+msgid "Resources Display"
+msgstr "Отображение ресурсов"
+
+#: data/scripts/player/client/musiccoordinator.lua:
+msgid "Enable UI movement"
+msgstr "Включить перемещение интерфейса"
+
+#: data/scripts/player/client/musiccoordinator.lua:
 msgid "Inventory Slots"
 msgstr "Слоты инвентаря"
 

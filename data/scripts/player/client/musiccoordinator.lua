@@ -1,8 +1,8 @@
--- While my mod has nothing to do with music, this approach allows it to be a 100% clientside mod
+-- While my mod has nothing to do with music, this approach allows it to be a clientside mod
 
 local Azimuth -- client includes
-local resourceDisplay_initialize -- client, extended functions
-local ResourceDisplayConfig -- client
+local resourceDisplay_initialize, resourceDisplay_updateClient -- client, extended functions
+local ResourceDisplayConfigOptions, ResourceDisplayConfig, resourceDisplay_rect, resourceDisplay_moveUI, resourceDisplay_dragged -- client
 
 if onClient() then
 
@@ -14,55 +14,106 @@ function MusicCoordinator.initialize(...)
     resourceDisplay_initialize(...)
 
     -- load config
-    local configOptions = {
+    ResourceDisplayConfigOptions = {
       _version = { default = "1.0", comment = "Config version. Don't touch." },
       ShowCargoCapacity = { default = true, comment = "Show current ship cargo capacity" },
       ShowInventoryCapacity = { default = true, comment = "Show currently used and total inventory slots" },
-      InventoryCapacityShowBothAlways = { default = false, comment = "Show both player and alliance inventory capacity no matter the ship" }
+      InventoryCapacityShowBothAlways = { default = false, comment = "Show both player and alliance inventory capacity no matter the ship" },
+      PositionX = { default = 5, comment = "UI X coordinate" },
+      PositionY = { default = 28, comment = "UI Y coordinate" }
     }
     local isModified
-    ResourceDisplayConfig, isModified = Azimuth.loadConfig("ResourceDisplay", configOptions)
+    ResourceDisplayConfig, isModified = Azimuth.loadConfig("ResourceDisplay", ResourceDisplayConfigOptions)
     if isModified then
-        Azimuth.saveConfig("ResourceDisplay", ResourceDisplayConfig, configOptions)
+        Azimuth.saveConfig("ResourceDisplay", ResourceDisplayConfig, ResourceDisplayConfigOptions)
     end
+
+    resourceDisplay_rect = Rect(
+      ResourceDisplayConfig.PositionX, ResourceDisplayConfig.PositionY,
+      ResourceDisplayConfig.PositionX + 290, ResourceDisplayConfig.PositionY + 180
+    )
+
+    local tab = PlayerWindow():createTab("Resources Display"%_t, "data/textures/icons/metal-bar.png", "Resources Display"%_t)
+    local lister = UIVerticalLister(Rect(tab.size), 10, 0)
+    local checkBox = tab:createCheckBox(lister:placeRight(vec2(lister.inner.width, 25)), "Enable UI movement"%_t, "resourceDisplay_onToggleMovement")
+    checkBox.captionLeft = false
 
     Player():registerCallback("onPreRenderHud", "resourceDisplay_onPreRenderHud")
 end
 
-function MusicCoordinator.resourceDisplay_onPreRenderHud()
+function MusicCoordinator.getUpdateInterval()
+    return resourceDisplay_moveUI and 0 or 1
+end
+
+resourceDisplay_updateClient = MusicCoordinator.updateClient
+function MusicCoordinator.updateClient(...)
+    if resourceDisplay_updateClient then resourceDisplay_updateClient(...) end
+
+    local mouse, isMouseDown, saveNewPosition
+    if resourceDisplay_moveUI then
+        if Player().state == PlayerStateType.Fly then
+            mouse = Mouse()
+            isMouseDown = mouse:mouseDown(MouseButton.Left)
+        elseif resourceDisplay_dragged then
+            saveNewPosition = true
+        end
+    else
+        saveNewPosition = true
+    end
+    if isMouseDown and not resourceDisplay_dragged then
+        if mouse.position.x >= resourceDisplay_rect.lower.x and mouse.position.x <= resourceDisplay_rect.upper.x
+          and mouse.position.y >= resourceDisplay_rect.lower.y and mouse.position.y <= resourceDisplay_rect.upper.y then
+            resourceDisplay_dragged = {
+              offsetX = mouse.position.x - resourceDisplay_rect.lower.x,
+              offsetY = mouse.position.y - resourceDisplay_rect.lower.y
+            }
+        end
+    end
+    if resourceDisplay_dragged then
+        local x = mouse.position.x - resourceDisplay_dragged.offsetX
+        local y = mouse.position.y - resourceDisplay_dragged.offsetY
+        resourceDisplay_rect = Rect(x, y, x + resourceDisplay_rect.width, y + resourceDisplay_rect.height)
+        if mouse:mouseUp(MouseButton.Left) then
+            saveNewPosition = true
+        end
+        if saveNewPosition then
+            saveNewPosition = false
+            ResourceDisplayConfig.PositionX = x
+            ResourceDisplayConfig.PositionY = y
+            resourceDisplay_dragged = nil
+            Azimuth.saveConfig("ResourceDisplay", ResourceDisplayConfig, ResourceDisplayConfigOptions)
+        end
+    end
+end
+
+function MusicCoordinator.resourceDisplay_onToggleMovement(checkbox, value)
+    resourceDisplay_moveUI = value
+end
+
+function MusicCoordinator.resourceDisplay_onPreRenderHud(state)
+    if state ~= PlayerStateType.Fly and state ~= PlayerStateType.Interact then return end
+
     local player = Player()
     local faction = player
+    local prefix = ""
     if player.craft and player.craft.allianceOwned then
         faction = Alliance()
+        prefix = "[A]  /* Alliance resource prefix */"%_t
     end
-    if player.state ~= PlayerStateType.Fly and player.state ~= PlayerStateType.Interact then return end
 
-    local alignBottom = tablelength(Galaxy():getPlayerNames()) > 1
-    local margin = alignBottom and 17 or 18
-    local y = 0
-    local uiLines = {}
-    if not faction.infiniteResources and player.state == PlayerStateType.Fly and not Hud().resourcesVisible then
-        local resources = {faction:getResources()}
-        for i = 1, #resources do
+    local x = resourceDisplay_rect.lower.x
+    local x2 = resourceDisplay_rect.upper.x
+    local y = resourceDisplay_rect.lower.y
+    if not faction.infiniteResources then
+        for i, amount in ipairs({faction:getResources()}) do
             local material = Material(i-1)
-            y = y + margin
-            if faction.isAlliance then
-                uiLines[#uiLines+1] = { text = "[A]  /* Alliance resource prefix */"%_t..material.name, y = y, color = material.color }
-            else
-                uiLines[#uiLines+1] = { text = material.name, y = y, color = material.color }
-            end
-            uiLines[#uiLines+1] = { text = createMonetaryString(resources[i]), y = y, color = material.color, right = 1 }
+            drawTextRect(prefix..material.name, Rect(x, y, x2, y + 16), -1, -1, material.color, 15, 0, 0, 2)
+            drawTextRect(createMonetaryString(amount), Rect(x, y, x2, y + 16), 1, -1, material.color, 15, 0, 0, 2)
+            y = y + 18
         end
-        y = y + margin
-        local white = ColorRGB(1, 1, 1)
-        if faction.isAlliance then
-            uiLines[#uiLines+1] = { text = "[A]  /* Alliance resource prefix */"%_t.."Credits"%_t, y = y, color = white }
-        else
-            uiLines[#uiLines+1] = { text = "Credits"%_t, y = y, color = white }
-        end
-        uiLines[#uiLines+1] = { text = "¢"..createMonetaryString(faction.money), y = y, color = white, right = 1 }
-    elseif not alignBottom and Hud().resourcesVisible then
-        y = y + NumMaterials() * margin
+        drawTextRect(prefix.."Credits"%_t, Rect(x, y, x2, y + 16), -1, -1, ColorRGB(1, 1, 1), 15, 0, 0, 2)
+        drawTextRect("¢"..createMonetaryString(faction.money), Rect(x, y, x2, y + 16), 1, -1, ColorRGB(1, 1, 1), 15, 0, 0, 2)
+        y = y + 18
     end
     -- inventory slots
     if ResourceDisplayConfig.ShowInventoryCapacity then
@@ -70,42 +121,31 @@ function MusicCoordinator.resourceDisplay_onPreRenderHud()
             faction = player
         end
         local inv = faction:getInventory()
-        y = y + margin
         local color = ColorRGB(0.8, 0.8, 0.8)
-        if faction.isAlliance then
-            uiLines[#uiLines+1] = { text = "[A]  /* Alliance resource prefix */"%_t.."Inventory Slots"%_t, y = y, color = color }
-        else
-            uiLines[#uiLines+1] = { text = "Inventory Slots"%_t, y = y, color = color }
-        end
-        uiLines[#uiLines+1] = { text = inv.occupiedSlots.."/"..inv.maxSlots, y = y, color = color, right = 1 }
+        drawTextRect("Inventory Slots"%_t, Rect(x, y, x2, y + 16), -1, -1, color, 15, 0, 0, 2)
+        drawTextRect(inv.occupiedSlots.."/"..inv.maxSlots, Rect(x, y, x2, y + 16), 1, -1, color, 15, 0, 0, 2)
+        y = y + 18
         if ResourceDisplayConfig.InventoryCapacityShowBothAlways and player.alliance then
             inv = player.alliance:getInventory()
-            y = y + margin
-            color = ColorRGB(0.8, 0.8, 0.8)
-            uiLines[#uiLines+1] = { text = "[A]  /* Alliance resource prefix */"%_t.."Inventory Slots"%_t, y = y, color = color }
-            uiLines[#uiLines+1] = { text = inv.occupiedSlots.."/"..inv.maxSlots, y = y, color = color, right = 1 }
+            drawTextRect("[A]  /* Alliance resource prefix */"%_t.."Inventory Slots"%_t, Rect(x, y, x2, y + 16), -1, -1, color, 15, 0, 0, 2)
+            drawTextRect(inv.occupiedSlots.."/"..inv.maxSlots, Rect(x, y, x2, y + 16), 1, -1, color, 15, 0, 0, 2)
+            y = y + 18
         end
     end
     -- cargo
     if ResourceDisplayConfig.ShowCargoCapacity then
         local ship = getPlayerCraft()
-        y = y + margin
         local color = ColorRGB(0.8, 0.8, 0.8)
-        uiLines[#uiLines+1] = { text = "Cargo Hold"%_t, y = y, color = color }
+        drawTextRect("Cargo Hold"%_t, Rect(x, y, x2, y + 16), -1, -1, color, 15, 0, 0, 2)
         if ship and ship.maxCargoSpace then
-            uiLines[#uiLines+1] = { text = math.ceil(ship.occupiedCargoSpace).."/"..math.floor(ship.maxCargoSpace), y = y, color = color, right = 1 }
+            drawTextRect(math.ceil(ship.occupiedCargoSpace).."/"..math.floor(ship.maxCargoSpace), Rect(x, y, x2, y + 16), 1, -1, color, 15, 0, 0, 2)
         else
-            uiLines[#uiLines+1] = { text = "-", y = y, color = color, right = 1 }
+            drawTextRect("-", Rect(x, y, x2, y + 16), 1, -1, color, 15, 0, 0, 2)
         end
     end
 
-    if alignBottom then
-        y = getResolution().y - 492 - y
-    else
-        y = 10
-    end
-    for _, line in ipairs(uiLines) do
-        drawTextRect(line.text, Rect(5, y + line.y, 295, y + line.y + 16), line.right or -1, -1, line.color, 15, 0, 0, 2)
+    if resourceDisplay_moveUI then
+        drawRect(resourceDisplay_rect, ColorARGB(0.6, 0.4, 0.4, 0.4))
     end
 end
 
