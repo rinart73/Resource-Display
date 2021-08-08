@@ -1,17 +1,37 @@
-# ========== data/scripts/player/client/musiccoordinator.lua ==========
-#: data/scripts/player/client/musiccoordinator.lua:
+# ========== C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua ==========
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
 msgid "Resources Display"
 msgstr ""
 
-#: data/scripts/player/client/musiccoordinator.lua:
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
 msgid "Resources Display"
 msgstr ""
 
-#: data/scripts/player/client/musiccoordinator.lua:
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
 msgid "Enable UI movement"
 msgstr ""
 
-#: data/scripts/player/client/musiccoordinator.lua:
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Reset UI position"
+msgstr ""
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Show current ship cargo capacity"
+msgstr ""
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Show currently used and total inventory slots"
+msgstr ""
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Show inventory capacity for alliance/ship at the same time"
+msgstr ""
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Show alliance resources when piloting an alliance ship"
+msgstr ""
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
 msgid "Inventory Slots"
 msgstr ""
 

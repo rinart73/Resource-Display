@@ -1,17 +1,37 @@
-# ========== data/scripts/player/client/musiccoordinator.lua ==========
-#: data/scripts/player/client/musiccoordinator.lua:
+# ========== C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua ==========
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
 msgid "Resources Display"
 msgstr "Отображение ресурсов"
 
-#: data/scripts/player/client/musiccoordinator.lua:
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
 msgid "Resources Display"
 msgstr "Отображение ресурсов"
 
-#: data/scripts/player/client/musiccoordinator.lua:
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
 msgid "Enable UI movement"
 msgstr "Включить перемещение интерфейса"
 
-#: data/scripts/player/client/musiccoordinator.lua:
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Reset UI position"
+msgstr "Сбросить позицию UI"
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Show current ship cargo capacity"
+msgstr "Показывать грузовой отсек текущего корабля"
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Show currently used and total inventory slots"
+msgstr "Показывать заполненность инвентаря"
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Show inventory capacity for alliance/ship at the same time"
+msgstr "Показывать заполненность инвентаря для игрока и альянса одновременно"
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
+msgid "Show alliance resources when piloting an alliance ship"
+msgstr "Показывать ресурсы альянса, когда пилотируется корабль альянса"
+
+#: C:/Users/user/AppData/Roaming/Avorion/mods/Resource Display/data/scripts/player/client/musiccoordinator.lua:
 msgid "Inventory Slots"
 msgstr "Слоты инвентаря"
 
