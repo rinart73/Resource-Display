@@ -4,7 +4,7 @@ Azimuth = include("azimuthlib-basic")
 include("azimuthlib-uiproportionalsplitter")
 
 local red_initialize, red_updateClient -- client, extended functions
-local red_configOptions, red_config, red_rect, red_moveUI, red_dragged -- client
+local red_configOptions, red_config, red_rect, red_moveUI, red_dragged, red_lt209 -- client
 
 
 if onClient() then
@@ -13,6 +13,8 @@ if onClient() then
 red_initialize = MusicCoordinator.initialize
 function MusicCoordinator.initialize(...)
     red_initialize(...)
+    
+    red_lt209 = GameVersion() >= Version("2.0.9")
 
     -- load config
     red_configOptions = {
@@ -114,7 +116,7 @@ function MusicCoordinator.red_onToggleMovement(checkbox, value)
 end
 
 function MusicCoordinator.red_onPreRenderHud(state)
-    if state ~= PlayerStateType.Fly and state ~= PlayerStateType.Interact then return end
+    if state ~= PlayerStateType.Fly and (red_lt209 or state ~= PlayerStateType.Interact) then return end
 
     local player = Player()
     local faction = player
